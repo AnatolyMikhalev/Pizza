@@ -1,16 +1,14 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProductStoreRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
-use Illuminate\Database\Eloquent\Model;
 
-class ProductController extends Controller
+class AdminProductController extends Controller
 {
     public function index(Request $request)
     {
@@ -43,6 +41,7 @@ class ProductController extends Controller
     {
         $product->update($request->validated());
 
+
         return new ProductResource($product);
     }
 
@@ -53,6 +52,7 @@ class ProductController extends Controller
     {
         $product->delete();
 
-        return response()->json(null, 204);
+        return response()->noContent();
     }
+
 }

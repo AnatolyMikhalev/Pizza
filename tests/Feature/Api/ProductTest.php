@@ -61,13 +61,13 @@ class ProductTest extends TestCase
         ]);
 
         // Выполняем GET-запрос к маршруту show
-        $response = $this->getJson("/api/products/{$product->id}");
+        $res = $this->json('GET', "api/products/{$product->id}");
 
         // Проверяем статус ответа
-        $response->assertStatus(200);
+        $res->assertStatus(200);
 
         // Проверяем структуру JSON
-        $response->assertJson([
+        $res->assertJson([
             'data' => [
                 'id' => $product->id,
                 'name' => 'Test Product Pizza',
@@ -82,7 +82,7 @@ class ProductTest extends TestCase
     public function test_show_product_returns_404_if_not_found()
     {
         // Выполняем GET-запрос к маршруту show с несуществующим ID
-        $response = $this->getJson('/api/products/999');
+        $response = $this->getJson('/api/products/999999');
 
         // Проверяем статус ответа
         $response->assertStatus(404);

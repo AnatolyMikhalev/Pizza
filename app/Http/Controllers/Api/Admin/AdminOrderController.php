@@ -1,27 +1,23 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OrderStoreRequest;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use App\Models\OrderProduct;
-use Barryvdh\Debugbar\Facades\Debugbar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class OrderController extends Controller
+class AdminOrderController extends Controller
 {
     public function index(Request $request): \Illuminate\Http\Resources\Json\AnonymousResourceCollection
     {
-        //Получаем текущего пользователя
         $user = auth()->user();
 
-        //Получаем все заказы, принадлежащие текущему пользователю
-        $orders = Order::where('user_id', $user->id)->with('products')->get();
+        $orders = Order::with('products')->get();
 
-        //return $orders->toJson();
         return OrderResource::collection($orders);
     }
 
@@ -30,7 +26,6 @@ class OrderController extends Controller
      */
     public function store(OrderStoreRequest $request): \Illuminate\Http\JsonResponse
     {
-        //dd($request);
         DB::transaction(function () use ($request) {
             $order = Order::create([
                 'user_id' => auth()->user()->id,
@@ -43,6 +38,7 @@ class OrderController extends Controller
                 'quantity' => $product['quantity'],
             ]);
         });
+
 
         // Возврат успешного ответа
         return response()->json(['message' => 'Заказ успешно создан'], 201);
@@ -61,14 +57,18 @@ class OrderController extends Controller
      */
     public function update(Request $request, Order $order)
     {
-        //
+        $order->update($request->all());
+
+        return $order;
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Order $order)
     {
-        //
+        $order->delete();
+
+        return response()->json(null, 204);
     }
 }

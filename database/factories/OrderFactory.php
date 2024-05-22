@@ -18,7 +18,7 @@ class OrderFactory extends Factory
     {
         return [
             'address' => $this->faker->address,
-            'delivered' => $this->faker->boolean,
+            'delivered' => 0,
             'user_id' => rand(1, 5),
         ];
     }
