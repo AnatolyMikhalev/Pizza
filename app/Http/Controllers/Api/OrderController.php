@@ -3,18 +3,17 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\OrderStoreRequest;
 use App\Http\Resources\OrderResource;
-use App\Http\Resources\ProductResource;
 use App\Models\Order;
 use App\Models\OrderProduct;
-use App\Models\Product;
 use Barryvdh\Debugbar\Facades\Debugbar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): \Illuminate\Http\Resources\Json\AnonymousResourceCollection
     {
         //Получаем текущего пользователя
         $user = auth()->user();
@@ -34,9 +33,9 @@ class OrderController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request): \Illuminate\Http\JsonResponse
+    public function store(OrderStoreRequest $request): \Illuminate\Http\JsonResponse
     {
-
+        //dd($request);
         DB::transaction(function () use ($request) {
             $order = Order::create([
                 'user_id' => auth()->user()->id,
@@ -58,7 +57,7 @@ class OrderController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show($id)
+    public function show($id): OrderResource
     {
         return new OrderResource(Order::with('products')->findOrFail($id));
     }
