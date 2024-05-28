@@ -161,7 +161,7 @@ class OrderTest extends TestCase
         $this->actingAs($user);
 
         $data = [
-            "address" => "123 Main St",
+            "address" => "111 Main St",
             "products" => [
                 [
                     "product_id" => 1,
@@ -180,15 +180,15 @@ class OrderTest extends TestCase
 
         $this->assertDatabaseHas('orders', [
             'user_id' => $user->id,
-            'address' => '123 Main St'
+            'address' => '111 Main St'
         ]);
     }
 
     /** @test */
-    public function test_store_order_can_be_stored_by_only_auth_user_401_if_not_authorized()
+    public function test_store_order_can_be_stored_by_only_auth_user_401_expected()
     {
         $data = [
-            "address" => "123 Main St",
+            "address" => "222 Main St",
             "products" => [
                 [
                     "product_id" => 1,
@@ -206,11 +206,51 @@ class OrderTest extends TestCase
         $res->assertStatus(401);
     }
 
+    /** @test */
+    public function test_store_invalid_data_422_expected()
+    {
+        $user = \App\Models\User::factory()->create();
+
+        $this->actingAs($user);
+
+        $data = [
+            "address" => "",
+            "products" => [
+                [
+                    "product_id" => 1,
+                    "quantity" => 0
+                ],
+                [
+                    "product_id" => 2,
+                    "quantity" => 0
+                ]
+            ]
+        ];
+
+        $res = $this->json('POST', 'api/orders', $data);
+
+        $res->assertStatus(422);
+        $res->assertJsonValidationErrors('address');
+        $res->assertJsonValidationErrors('products.0.quantity');
+        $res->assertJsonValidationErrors('products.1.quantity');
+    }
 
     /** @test */
     public function test_show_user_can_see_hisown_order()
     {
+        //$this->withoutExceptionHandling();
 
+        $user = \App\Models\User::factory()->create();
+
+        $this->actingAs($user);
+
+        $order = Order::factory()->create(['user_id' => $user->id]);
+       // dump($order->id);
+        $res = $this->get('api/orders/' . $order->id);
+//        $res = $this->get('api/orders/' . $order->id);
+
+        dump($res->json());
+        $res->assertStatus(200);
     }
 
     /** @test */

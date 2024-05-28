@@ -11,7 +11,7 @@ class OrderStoreRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return auth()->check();
     }
 
     /**
@@ -22,8 +22,7 @@ class OrderStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'address_id' => 'required', // Проверка наличия адреса
-            'user_id' => 'required', // Проверка наличия пользователя
+            'address' => 'required', // Проверка наличия адреса
             'products' => 'required|array|min:1', // Проверка наличия продуктов и их формата
             'products.*.product_id' => 'required|exists:products,id', // Проверка наличия product_id в таблице Products
             'products.*.quantity' => 'required|integer|min:1', // Проверка количества продуктов
