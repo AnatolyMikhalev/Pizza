@@ -1,4 +1,4 @@
-Для запуска проекта:
-sail up -d
-sail artisan migrate:fresh --seed
-sail test
+Для запуска проекта: <br>
+sail up -d <br>
+sail artisan migrate:fresh --seed <br>
+sail test <br>
