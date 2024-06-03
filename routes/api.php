@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\AdminOrderController;
+use App\Http\Controllers\Api\Admin\AdminProductController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
@@ -19,8 +20,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/products', [ProductController::class, 'index']);
-Route::get('/products/{id}', [ProductController::class, 'show']);
+
+/** Auth Routes */
 
 Route::prefix('auth')->middleware('api')->controller(AuthController::class)->group(function () {
     Route::post('/register', 'register');
@@ -30,21 +31,27 @@ Route::prefix('auth')->middleware('api')->controller(AuthController::class)->gro
     Route::post('/refresh', 'refresh');
 });
 
-Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function () {
-        Route::resource('products', ProductController::class);
-        Route::resource('orders', AdminOrderController::class);
 
-        Route::post('/products', [ProductController::class, 'store']);
+/** Product Routes */
+
+Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products/{id}', [ProductController::class, 'show']);
+
+Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function () {
+        Route::resource('/products', AdminProductController::class);
+        Route::post('/products', [AdminProductController::class, 'store']);
     }
 );
 
+
+/** Order Routes */
+
 Route::group(['middleware' => 'auth'], function () {
+    Route::resource('admin/orders', AdminOrderController::class)->middleware('admin');
     Route::get('/orders', [OrderController::class, 'index']);
-    Route::get('/orders/{id}', [OrderController::class, 'show']);
     Route::post('/orders', [OrderController::class, 'store']);
-
-
 });
+
 Route::group(['middleware' => 'check.order.owner'], function () {
     Route::get('/orders/{order}', [OrderController::class, 'show']);
     Route::put('/orders/{order}', [OrderController::class, 'update']);

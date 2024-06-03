@@ -121,34 +121,6 @@ class OrderTest extends TestCase
         $res = $this->get('api/admin/orders');
 
         $res->assertStatus(401);
-
-        $orders = Order::all()->toArray();
-
-        // dd($orders);
-
-//        foreach ($orders as $order) {
-//            $res->assertJsonFragment([
-//                'id' => $order->id,
-//                'user_id' => $order->user_id,
-//                'address' => $order->address,
-//                'delivered' => $order->delivered,
-//                'created_at' => $order->created_at->toJSON(),
-//                'products' => $order->products->map(function ($product) use ($order) {
-//                    return [
-//                        'id' => $product->id,
-//                        'name' => $product->name,
-//                        'type' => $product->type,
-//                        'price' => $product->price,
-//                        'created_at' => $product->created_at->toJSON(),
-//                        'updated_at' => $product->updated_at->toJSON(),
-//                        'pivot' => [
-//                            'order_id' => $order->id,
-//                            'product_id' => $product->id,
-//                        ],
-//                    ];
-//                })->toArray(),
-//            ]);
-//        }
     }
 
     /** @test */
@@ -261,7 +233,6 @@ class OrderTest extends TestCase
 
         $res = $this->json('GET','api/orders/' . $order2->id);
 
-
         $res->assertStatus(403);
     }
 
@@ -289,7 +260,7 @@ class OrderTest extends TestCase
     }
 
     /** @test */
-    public function test_update_user_can_not_change_status_403_expected()
+    public function test_update_user_can_not_change_status_401_expected()
     {
         $user = \App\Models\User::factory()->create();
 
@@ -328,15 +299,13 @@ class OrderTest extends TestCase
     }
 
     /** @test */
-    public function test_destroy_user_can_not_delete_order_403_expected()
+    public function test_destroy_user_can_not_delete_order_401_expected()
     {
         $user = \App\Models\User::factory()->create();
 
         $this->actingAs($user);
 
         $order = Order::factory()->create();
-
-        dump($order->toArray());
 
         $res = $this->json('DELETE','api/admin/orders/' . $order->id);
 

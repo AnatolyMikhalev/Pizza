@@ -53,7 +53,7 @@ class OrderController extends Controller
      */
     public function show($id): OrderResource
     {
-        return new OrderResource(Order::with('products')->findOrFail($id));
+        return new OrderResource(Order::where('user_id', auth()->user()->id)->with('products')->findOrFail($id));
     }
 
     /**

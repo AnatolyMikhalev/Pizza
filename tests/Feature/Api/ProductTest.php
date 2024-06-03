@@ -14,7 +14,7 @@ class ProductTest extends TestCase
     use DatabaseTransactions;
 
     /** @test */
-    public function test_anyone_can_to_see_products()
+    public function test_index_anyone_can_to_see_products()
     {
         $this->withoutExceptionHandling();
 
@@ -24,7 +24,7 @@ class ProductTest extends TestCase
     }
 
     /** @test */
-    public function test_admin_can_stored_products()
+    public function test_store_admin_can_store_products()
     {
         $this->withoutExceptionHandling();
 
@@ -49,24 +49,45 @@ class ProductTest extends TestCase
         ]);
     }
 
+    /** @test */
+    public function test_store_user_can_not_store_products_401_expected()
+    {
+        $this->withoutExceptionHandling();
+
+        $user = \App\Models\User::factory()->create();
+
+        $this->actingAs($user);
+
+        $data = [
+            "name" => "Test Product",
+            "price" => 10,
+            "type" => "pizza"
+        ];
+
+        $res = $this->json('POST', 'api/admin/products', $data);
+
+        $res->assertStatus(401);
+
+        $this->assertDatabaseMissing('products', [
+            "name" => "Test Product",
+            "price" => 10,
+            "type" => "pizza"
+        ]);
+    }
 
     /** @test */
     public function test_show_product_returns_correct_data()
     {
-        // Создаем продукт
         $product = Product::factory()->create([
             'name' => 'Test Product Pizza',
             'type' => 'Pizza',
             'price' => 99.99,
         ]);
 
-        // Выполняем GET-запрос к маршруту show
         $res = $this->json('GET', "api/products/{$product->id}");
 
-        // Проверяем статус ответа
         $res->assertStatus(200);
 
-        // Проверяем структуру JSON
         $res->assertJson([
             'data' => [
                 'id' => $product->id,
@@ -77,15 +98,89 @@ class ProductTest extends TestCase
         ]);
     }
 
-
     /** @test */
-    public function test_show_product_returns_404_if_not_found()
+    public function test_show_product_returns_404_expected()
     {
-        // Выполняем GET-запрос к маршруту show с несуществующим ID
-        $response = $this->getJson('/api/products/999999');
+        $response = $this->getJson('/api/products/99999999');
 
-        // Проверяем статус ответа
         $response->assertStatus(404);
+    }
+
+    public function test_update_admin_can_update_product()
+    {
+        $user = \App\Models\User::factory()->withAdminRole()->create();
+
+        $this->actingAs($user);
+
+        $product = Product::factory()->create();
+
+        $data = [
+            'name' => 'Test Product Pizza',
+            'price' => 2222,
+        ];
+
+        $res = $this->json('PUT','api/admin/products/' . $product->id, $data);
+
+        $res->assertStatus(200);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->id,
+            'name' => 'Test Product Pizza',
+            'price' => 2222,
+        ]);
+    }
+
+    public function test_update_user_can_not_update_product_401_expected()
+    {
+        $user = \App\Models\User::factory()->create();
+
+        $this->actingAs($user);
+
+        $product = Product::factory()->create();
+
+        $data = [
+            'name' => 'Test Product Pizza',
+            'price' => 2222,
+        ];
+
+        $res = $this->json('PUT','api/admin/products/' . $product->id, $data);
+
+        $res->assertStatus(401);
+
+        $this->assertDatabaseMissing('products', [
+            'id' => $product->id,
+            'name' => 'Test Product Pizza',
+            'price' => 2222,
+        ]);
+    }
+
+    public function test_destroy_admin_can_delete_product()
+    {
+        $user = \App\Models\User::factory()->withAdminRole()->create();
+
+        $this->actingAs($user);
+
+        $product = Product::factory()->create();
+
+        $res = $this->json('DELETE','api/admin/products/' . $product->id);
+
+        $res->assertStatus(204);
+
+        $this->assertDatabaseMissing('products', ['id' => $product->id]);
+    }
+    public function test_destroy_user_can_not_delete_product()
+    {
+        $user = \App\Models\User::factory()->create();
+
+        $this->actingAs($user);
+
+        $product = Product::factory()->create();
+
+        $res = $this->json('DELETE','api/admin/products/' . $product->id);
+
+        $res->assertStatus(401);
+
+        $this->assertDatabaseHas('products', ['id' => $product->id]);
     }
 
 }

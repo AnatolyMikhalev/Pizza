@@ -21,11 +21,8 @@ class ProductController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(ProductStoreRequest $request): ProductResource
+    public function store(ProductStoreRequest $request)
     {
-        $createdProduct = Product::create($request->validated());
-
-        return new ProductResource($createdProduct);
     }
 
     /**
@@ -39,11 +36,8 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(ProductStoreRequest $request, Product $product): ProductResource
+    public function update(Request $request, Product $product)
     {
-        $product->update($request->validated());
-
-        return new ProductResource($product);
     }
 
     /**
@@ -51,8 +45,5 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        $product->delete();
-
-        return response()->json(null, 204);
     }
 }

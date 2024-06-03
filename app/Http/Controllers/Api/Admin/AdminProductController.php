@@ -37,12 +37,11 @@ class AdminProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(ProductStoreRequest $request, Product $product): ProductResource
+    public function update(Request $request, Product $product)
     {
-        $product->update($request->validated());
+        $product->update($request->all());
 
-
-        return new ProductResource($product);
+        return $product;
     }
 
     /**
