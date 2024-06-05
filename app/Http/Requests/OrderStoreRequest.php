@@ -22,10 +22,37 @@ class OrderStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'address' => 'required', // Проверка наличия адреса
+            'address' => 'required|string|max:255', // Проверка наличия адреса
             'products' => 'required|array|min:1', // Проверка наличия продуктов и их формата
             'products.*.product_id' => 'required|exists:products,id', // Проверка наличия product_id в таблице Products
             'products.*.quantity' => 'required|integer|min:1', // Проверка количества продуктов
         ];
+    }
+
+
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $products = $this->input('products', []);
+            $pizzas = 0;
+            $beverages = 0;
+
+            foreach ($products as $product) {
+                $productModel = \App\Models\Product::find($product['product_id']);
+                if ($productModel->type === 'Pizza') {
+                    $pizzas += $product['quantity'];
+                } elseif ($productModel->type === 'Beverage') {
+                    $beverages += $product['quantity'];
+                }
+            }
+
+            if ($pizzas > 10) {
+                $validator->errors()->add('products', 'You cannot order more than 10 Pizza products.');
+            }
+
+            if ($beverages > 20) {
+                $validator->errors()->add('products', 'You cannot order more than 20 Beverage products.');
+            }
+        });
     }
 }

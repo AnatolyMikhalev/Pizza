@@ -30,7 +30,6 @@ class OrderController extends Controller
      */
     public function store(OrderStoreRequest $request): \Illuminate\Http\JsonResponse
     {
-        //dd($request);
         DB::transaction(function () use ($request) {
             $order = Order::create([
                 'user_id' => auth()->user()->id,

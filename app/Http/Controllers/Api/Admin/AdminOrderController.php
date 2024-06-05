@@ -24,24 +24,8 @@ class AdminOrderController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(OrderStoreRequest $request): \Illuminate\Http\JsonResponse
+    public function store(OrderStoreRequest $request)
     {
-        DB::transaction(function () use ($request) {
-            $order = Order::create([
-                'user_id' => auth()->user()->id,
-                'address' => $request->address,
-            ]);
-
-            foreach ($request->products as $product) OrderProduct::create([
-                'order_id' => $order->id,
-                'product_id' => $product['product_id'],
-                'quantity' => $product['quantity'],
-            ]);
-        });
-
-
-        // Возврат успешного ответа
-        return response()->json(['message' => 'Заказ успешно создан'], 201);
     }
 
     /**

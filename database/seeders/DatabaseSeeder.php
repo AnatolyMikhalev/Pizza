@@ -18,8 +18,23 @@ class DatabaseSeeder extends Seeder
     {
         User::factory(2)->withAdminRole()->create();
         User::factory(7)->create();
-        Order::factory(12)->create();
-        Product::factory(22)->create();
-        OrderProduct::factory(12)->create();
+        Product::factory(22)->withPizzaType()->create();
+
+//        Order::factory(12)
+//            ->hasAttached(
+//                Product::factory()->count(5),
+//                ['quantity' => rand(1,3)]
+//            )
+//            ->create();
+//
+        Order::factory(12)->create()->each(function ($order) {
+            $products = Product::factory()->count(5)->create();
+            foreach ($products as $product) {
+                $order->products()->attach($product->id, ['quantity' => rand(1, 3)]);
+            }
+        });
+
+
+        //OrderProduct::factory(12)->create();
     }
 }

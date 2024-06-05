@@ -207,6 +207,55 @@ class OrderTest extends TestCase
         $res->assertJsonValidationErrors('products.1.quantity');
     }
 
+
+    /** @test */
+    public function test_store_user_can_not_add_more_than_10_pizzas_or_20_beverages_422_expected()
+    {
+        $user = \App\Models\User::factory()->create();
+
+        $this->actingAs($user);
+
+        $pizza = Product::factory()->create([
+            'type' => 'Pizza',
+        ]);
+        $pizza2 = Product::factory()->create([
+            'type' => 'Pizza',
+        ]);
+        $beverage = Product::factory()->create([
+            'type' => 'Beverage',
+        ]);
+
+        $data = [
+            "address" => "Petrova st. 25",
+            "products" => [
+                [
+                    "product_id" => $pizza->id,
+                    "quantity" => 4
+                ],
+                [
+                    "product_id" => $pizza2->id,
+                    "quantity" => 7
+                ],
+                [
+                    "product_id" => $beverage->id,
+                    "quantity" => 21
+                ]
+            ]
+        ];
+
+        $res = $this->json('POST', 'api/orders', $data);
+
+        $res->assertStatus(422);
+
+        $res->assertJsonFragment([
+            'You cannot order more than 10 Pizza products.',
+        ]);
+
+        $res->assertJsonFragment([
+            'You cannot order more than 20 Beverage products.',
+        ]);
+    }
+
     /** @test */
     public function test_show_user_can_see_hisown_order()
     {
