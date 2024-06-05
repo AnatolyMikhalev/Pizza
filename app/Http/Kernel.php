@@ -67,5 +67,6 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'admin' => \App\Http\Middleware\AdminPanelMiddleware::class,
+        'check.order.owner' => \App\Http\Middleware\CheckOrderOwner::class,
     ];
 }

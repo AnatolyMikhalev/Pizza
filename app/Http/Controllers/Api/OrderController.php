@@ -18,13 +18,8 @@ class OrderController extends Controller
         //Получаем текущего пользователя
         $user = auth()->user();
 
-        if ($user->role === 'admin') {
-            // Если роль admin, получаем все заказы
-            $orders = Order::with('products')->get();
-        } else {
-            //Получаем все заказы, принадлежащие текущему пользователю
-            $orders = Order::where('user_id', $user->id)->with('products')->get();
-        }
+        //Получаем все заказы, принадлежащие текущему пользователю
+        $orders = Order::where('user_id', $user->id)->with('products')->get();
 
         //return $orders->toJson();
         return OrderResource::collection($orders);
@@ -35,7 +30,6 @@ class OrderController extends Controller
      */
     public function store(OrderStoreRequest $request): \Illuminate\Http\JsonResponse
     {
-        //dd($request);
         DB::transaction(function () use ($request) {
             $order = Order::create([
                 'user_id' => auth()->user()->id,
@@ -49,7 +43,6 @@ class OrderController extends Controller
             ]);
         });
 
-
         // Возврат успешного ответа
         return response()->json(['message' => 'Заказ успешно создан'], 201);
     }
@@ -59,13 +52,13 @@ class OrderController extends Controller
      */
     public function show($id): OrderResource
     {
-        return new OrderResource(Order::with('products')->findOrFail($id));
+        return new OrderResource(Order::where('user_id', auth()->user()->id)->with('products')->findOrFail($id));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Order $order)
     {
         //
     }

@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\AdminOrderController;
+use App\Http\Controllers\Api\Admin\AdminProductController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
@@ -18,23 +20,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-//Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//    return $request->user();
-//});
 
+/** Auth Routes */
 
-Route::get('/products', [ProductController::class, 'index']);
-Route::get('/products/{id}', [ProductController::class, 'show']);
-//Route::post('/products', [ProductController::class, 'store']);
-//Route::put('/products/{product}', [ProductController::class, 'update']);
-//Route::delete('/products/{product}', [ProductController::class, 'destroy']);
-
-//Route::get('/orders', [OrderController::class, 'index']);
-//Route::get('/orders/{id}', [OrderCsontroller::class, 'show']);
-//Route::post('/orders', [OrderController::class, 'store']);
-//Route::post('orders', [OrderController::class, 'store']);
-
-Route::prefix('auth')->middleware('api')->controller(AuthController::class)->group(function () {
+//Route::prefix('auth')->middleware('api')->controller(AuthController::class)->group(function () {
+Route::group(['prefix' => 'auth','middleware' => 'api', 'controller' => AuthController::class], function () {
     Route::post('/register', 'register');
     Route::post('/login', 'login');
     Route::post('/user', 'user');
@@ -42,27 +32,29 @@ Route::prefix('auth')->middleware('api')->controller(AuthController::class)->gro
     Route::post('/refresh', 'refresh');
 });
 
-//Route::group(['middleware' => 'auth'], function () {
-//    Route::get('/products', [ProductController::class, 'index']);
-//    Route::get('/products/{id}', [ProductController::class, 'show']);
-//    Route::post('/products', [ProductController::class, 'store']);
-//    Route::put('/products/{product}', [ProductController::class, 'update']);
-//    Route::delete('/products/{product}', [ProductController::class, 'destroy']);
-//});
 
-Route::group(['namespace' => 'Admin', 'prefix' => 'admin','middleware' => 'auth'], function () {
-    Route::get('/products/{id}', [ProductController::class, 'show']);
-    Route::post('/products', [ProductController::class, 'store']);
-    Route::put('/products/{product}', [ProductController::class, 'update']);
-    Route::delete('/products/{product}', [ProductController::class, 'destroy']);
+/** Product Routes */
 
+Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products/{id}', [ProductController::class, 'show']);
+
+Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function () {
+        Route::resource('/products', AdminProductController::class);
+        Route::post('/products', [AdminProductController::class, 'store']);
+    }
+);
+
+
+/** Order Routes */
+
+Route::group(['middleware' => 'auth'], function () {
+    Route::resource('admin/orders', AdminOrderController::class)->middleware('admin');
     Route::get('/orders', [OrderController::class, 'index']);
+    Route::post('/orders', [OrderController::class, 'store']);
 });
 
-//Route::get('/products', [ProductController::class, 'index'])->middleware('admin');
-
-Route::group(['namespace' => 'User', 'middleware' => 'auth'], function () {
-    Route::get('/orders', [OrderController::class, 'index']);
-    Route::get('/orders/{id}', [OrderController::class, 'show']);
-    Route::post('/orders', [OrderController::class, 'store']);
+Route::group(['middleware' => 'check.order.owner', 'controller' => OrderController::class], function () {
+        Route::get('/orders/{order}', 'show');
+        Route::put('/orders/{order}', 'update');
+        Route::delete('/orders/{order}', 'destroy');
 });

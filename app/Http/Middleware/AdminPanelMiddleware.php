@@ -23,3 +23,4 @@ class AdminPanelMiddleware
         return $next($request);
     }
 }
+

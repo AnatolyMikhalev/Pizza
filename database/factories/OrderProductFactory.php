@@ -18,9 +18,9 @@ class OrderProductFactory extends Factory
     public function definition(): array
     {
         return [
-            'product_id' => rand(1,10),
-            'order_id' => rand(1,10),
-            'quantity' => rand(1,3),
+            'product_id' => $this->faker->numberBetween(1, 10),
+            'order_id' => $this->faker->numberBetween(1, 10),
+            'quantity' => $this->faker->numberBetween(1, 3),
         ];
     }
 }

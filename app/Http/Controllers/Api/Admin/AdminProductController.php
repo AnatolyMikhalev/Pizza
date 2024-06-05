@@ -1,16 +1,14 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProductStoreRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
-use Illuminate\Database\Eloquent\Model;
 
-class ProductController extends Controller
+class AdminProductController extends Controller
 {
     public function index(Request $request)
     {
@@ -21,8 +19,11 @@ class ProductController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(ProductStoreRequest $request)
+    public function store(ProductStoreRequest $request): ProductResource
     {
+        $createdProduct = Product::create($request->validated());
+
+        return new ProductResource($createdProduct);
     }
 
     /**
@@ -38,6 +39,9 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
+        $product->update($request->all());
+
+        return $product;
     }
 
     /**
@@ -45,5 +49,9 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
+        $product->delete();
+
+        return response()->noContent();
     }
+
 }

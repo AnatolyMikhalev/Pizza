@@ -110,45 +110,17 @@ class OrderTest extends TestCase
     }
 
     /** @test */
-    public function test_index_only_admin_can_see_all_orders()
+    public function test_index_only_admin_can_see_all_orders_401_expected()
     {
-        $this->withoutExceptionHandling();
+        //$this->withoutExceptionHandling();
 
-        $user = \App\Models\User::factory()->withAdminRole()->create();
+        $user = \App\Models\User::factory()->create();
 
         $this->actingAs($user);
 
         $res = $this->get('api/admin/orders');
 
-        $res->assertStatus(200);
-
-        $orders = Order::all()->toArray();
-
-        // dd($orders);
-
-//        foreach ($orders as $order) {
-//            $res->assertJsonFragment([
-//                'id' => $order->id,
-//                'user_id' => $order->user_id,
-//                'address' => $order->address,
-//                'delivered' => $order->delivered,
-//                'created_at' => $order->created_at->toJSON(),
-//                'products' => $order->products->map(function ($product) use ($order) {
-//                    return [
-//                        'id' => $product->id,
-//                        'name' => $product->name,
-//                        'type' => $product->type,
-//                        'price' => $product->price,
-//                        'created_at' => $product->created_at->toJSON(),
-//                        'updated_at' => $product->updated_at->toJSON(),
-//                        'pivot' => [
-//                            'order_id' => $order->id,
-//                            'product_id' => $product->id,
-//                        ],
-//                    ];
-//                })->toArray(),
-//            ]);
-//        }
+        $res->assertStatus(401);
     }
 
     /** @test */
@@ -235,52 +207,159 @@ class OrderTest extends TestCase
         $res->assertJsonValidationErrors('products.1.quantity');
     }
 
+
+    /** @test */
+    public function test_store_user_can_not_add_more_than_10_pizzas_or_20_beverages_422_expected()
+    {
+        $user = \App\Models\User::factory()->create();
+
+        $this->actingAs($user);
+
+        $pizza = Product::factory()->create([
+            'type' => 'Pizza',
+        ]);
+        $pizza2 = Product::factory()->create([
+            'type' => 'Pizza',
+        ]);
+        $beverage = Product::factory()->create([
+            'type' => 'Beverage',
+        ]);
+
+        $data = [
+            "address" => "Petrova st. 25",
+            "products" => [
+                [
+                    "product_id" => $pizza->id,
+                    "quantity" => 4
+                ],
+                [
+                    "product_id" => $pizza2->id,
+                    "quantity" => 7
+                ],
+                [
+                    "product_id" => $beverage->id,
+                    "quantity" => 21
+                ]
+            ]
+        ];
+
+        $res = $this->json('POST', 'api/orders', $data);
+
+        $res->assertStatus(422);
+
+        $res->assertJsonFragment([
+            'You cannot order more than 10 Pizza products.',
+        ]);
+
+        $res->assertJsonFragment([
+            'You cannot order more than 20 Beverage products.',
+        ]);
+    }
+
     /** @test */
     public function test_show_user_can_see_hisown_order()
     {
-        //$this->withoutExceptionHandling();
-
         $user = \App\Models\User::factory()->create();
 
         $this->actingAs($user);
 
         $order = Order::factory()->create(['user_id' => $user->id]);
-       // dump($order->id);
-        $res = $this->get('api/orders/' . $order->id);
-//        $res = $this->get('api/orders/' . $order->id);
 
-        dump($res->json());
+        $res = $this->json('GET','api/orders/' . $order->id);
+
         $res->assertStatus(200);
     }
 
     /** @test */
     public function test_show_user_can_not_see_stranger_order_403_expected()
     {
+        $user1 = \App\Models\User::factory()->create();
+        $user2 = \App\Models\User::factory()->create();
 
+        $this->actingAs($user1);
+
+        $order2 = Order::factory()->create(['user_id' => $user2->id]);
+
+        $res = $this->json('GET','api/orders/' . $order2->id);
+
+        $res->assertStatus(403);
     }
 
     /** @test */
     public function test_update_admin_can_change_status()
     {
+        $user = \App\Models\User::factory()->withAdminRole()->create();
 
+        $this->actingAs($user);
+
+        $order = Order::factory()->create();
+
+        $data = [
+            'delivered' => 1,
+        ];
+
+        $res = $this->json('PUT','api/admin/orders/' . $order->id, $data);
+
+        $res->assertStatus(200);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'delivered' => 1,
+        ]);
     }
 
     /** @test */
-    public function test_update_user_can_not_change_status_403_expected()
+    public function test_update_user_can_not_change_status_401_expected()
     {
+        $user = \App\Models\User::factory()->create();
 
+        $this->actingAs($user);
+
+        $order = Order::factory()->create();
+
+        $data = [
+            'delivered' => 1,
+        ];
+
+        $res = $this->json('PUT','api/admin/orders/' . $order->id, $data);
+
+        $res->assertStatus(401);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'delivered' => 0,
+        ]);
     }
 
     /** @test */
     public function test_destroy_admin_can_delete_order()
     {
+        $user = \App\Models\User::factory()->withAdminRole()->create();
 
+        $this->actingAs($user);
+
+        $order = Order::factory()->create();
+
+        $res = $this->json('DELETE','api/admin/orders/' . $order->id);
+
+        $res->assertStatus(204);
+
+        $this->assertDatabaseMissing('orders', ['id' => $order->id]);
     }
 
     /** @test */
-    public function test_destroy_user_can_not_delete_order_403_expected()
+    public function test_destroy_user_can_not_delete_order_401_expected()
     {
+        $user = \App\Models\User::factory()->create();
 
+        $this->actingAs($user);
+
+        $order = Order::factory()->create();
+
+        $res = $this->json('DELETE','api/admin/orders/' . $order->id);
+
+        $res->assertStatus(401);
+
+        $this->assertDatabaseHas('orders', ['id' => $order->id]);
     }
-
 }
