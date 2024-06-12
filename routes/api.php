@@ -28,6 +28,7 @@ Route::group(['prefix' => 'auth','middleware' => 'api', 'controller' => AuthCont
     Route::post('/register', 'register');
     Route::post('/login', 'login');
     Route::post('/user', 'user');
+
     Route::post('/logout', 'logout');
     Route::post('/refresh', 'refresh');
 });
@@ -40,7 +41,6 @@ Route::get('/products/{id}', [ProductController::class, 'show']);
 
 Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function () {
         Route::resource('/products', AdminProductController::class);
-        Route::post('/products', [AdminProductController::class, 'store']);
     }
 );
 

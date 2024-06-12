@@ -86,6 +86,7 @@ class ProductFactory extends Factory
             'name' => $faker->foodName(),
             'type' => $this->typeOfProduct(),
             'price' => $this->faker->randomFloat(2, 100, 1000), // Генерация случайной десятичной цены с двумя знаками после запятой
+            'image_url' => $faker->imageUrl(),
         ];
     }
 }

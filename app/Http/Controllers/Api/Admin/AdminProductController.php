@@ -7,10 +7,11 @@ use App\Http\Requests\ProductStoreRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class AdminProductController extends Controller
 {
-    public function index(Request $request)
+    public function index(ProductStoreRequest $request)
     {
         return Product::all();
         //return collection(Product::all());
@@ -21,7 +22,16 @@ class AdminProductController extends Controller
      */
     public function store(ProductStoreRequest $request): ProductResource
     {
-        $createdProduct = Product::create($request->validated());
+        $data = $request->validated();
+
+        if(isset($data['image'])){
+            $path = $data['image']->store('images', 'public');
+            $data['image_url'] = $path;
+        }
+
+        unset($data['image']);
+
+        $createdProduct = Product::create($data);
 
         return new ProductResource($createdProduct);
     }
@@ -39,7 +49,20 @@ class AdminProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        $product->update($request->all());
+        $data = $request->all();
+
+        if (isset($data['image'])) {
+            if (isset($product['image_url'])) {
+                Storage::delete($product['image_url']);
+            }
+
+            $path = $data['image']->store('images', 'public');
+            $data['image_url'] = $path;
+        }
+
+        unset($data['image']);
+
+        $product->update($data);
 
         return $product;
     }
