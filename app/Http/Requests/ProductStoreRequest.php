@@ -25,7 +25,8 @@ class ProductStoreRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:1',
-            'type' => 'required|string|max:255', //. implode(',', array_keys(Product::$types)),
+            'type' => 'required|string|max:255',
+            'image' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg',
         ];
     }
 }

@@ -7,6 +7,10 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Http\Testing\File;
+use Illuminate\Support\Facades\Storage;
+//use Illuminate\Support\Facades\File;
+//use phpDocumentor\Reflection\File;
 use Tests\TestCase;
 
 class ProductTest extends TestCase
@@ -35,7 +39,7 @@ class ProductTest extends TestCase
         $data = [
             "name" => "Test Product",
             "price" => 10,
-            "type" => "pizza"
+            "type" => "pizza",
         ];
 
         $res = $this->json('POST', 'api/admin/products', $data);
@@ -45,7 +49,42 @@ class ProductTest extends TestCase
         $this->assertDatabaseHas('products', [
             "name" => "Test Product",
             "price" => 10,
-            "type" => "pizza"
+            "type" => "pizza",
+        ]);
+    }
+
+
+    /** @test */
+    public function test_store_admin_can_store_products_with_image()
+    {
+        $this->withoutExceptionHandling();
+
+        Storage::fake('public');
+
+        $file = File::create('my_image.jpg');
+
+        $user = \App\Models\User::factory()->withAdminRole()->create();
+
+        $this->actingAs($user);
+
+        $data = [
+            "name" => "Test Product",
+            "price" => 10,
+            "type" => "pizza",
+            'image' => $file,
+        ];
+
+        $res = $this->json('POST', 'api/admin/products', $data);
+
+        $res->assertStatus(201);
+
+        dump($file->hashName());
+
+        $this->assertDatabaseHas('products', [
+            "name" => "Test Product",
+            "price" => 10,
+            "type" => "pizza",
+            'image_url' => 'images/' . $file->hashName(),
         ]);
     }
 
@@ -108,15 +147,21 @@ class ProductTest extends TestCase
 
     public function test_update_admin_can_update_product()
     {
+        Storage::fake('public');
+
+        $file = File::create('my_image.jpg');
+
         $user = \App\Models\User::factory()->withAdminRole()->create();
 
         $this->actingAs($user);
 
         $product = Product::factory()->create();
 
+
         $data = [
             'name' => 'Test Product Pizza',
             'price' => 2222,
+            'image' => $file,
         ];
 
         $res = $this->json('PUT','api/admin/products/' . $product->id, $data);
@@ -127,6 +172,7 @@ class ProductTest extends TestCase
             'id' => $product->id,
             'name' => 'Test Product Pizza',
             'price' => 2222,
+            'image_url' => 'images/' . $file->hashName(),
         ]);
     }
 
