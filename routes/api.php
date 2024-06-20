@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\Admin\AdminOrderController;
 use App\Http\Controllers\Api\Admin\AdminProductController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\UserController;
@@ -23,7 +24,6 @@ use Illuminate\Support\Facades\Route;
 
 /** Auth Routes */
 
-//Route::prefix('auth')->middleware('api')->controller(AuthController::class)->group(function () {
 Route::group(['prefix' => 'auth','middleware' => 'api', 'controller' => AuthController::class], function () {
     Route::post('/register', 'register');
     Route::post('/login', 'login');
@@ -47,14 +47,26 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin']], function 
 
 /** Order Routes */
 
+Route::group(['middleware' => 'check.order.owner', 'controller' => OrderController::class], function () {
+    Route::get('/orders/{order}', 'show');
+    Route::put('/orders/{order}', 'update');
+    Route::delete('/orders/{order}', 'destroy');
+});
+
 Route::group(['middleware' => 'auth'], function () {
     Route::resource('admin/orders', AdminOrderController::class)->middleware('admin');
     Route::get('/orders', [OrderController::class, 'index']);
     Route::post('/orders', [OrderController::class, 'store']);
 });
 
-Route::group(['middleware' => 'check.order.owner', 'controller' => OrderController::class], function () {
-        Route::get('/orders/{order}', 'show');
-        Route::put('/orders/{order}', 'update');
-        Route::delete('/orders/{order}', 'destroy');
+
+/** Cart Routes */
+
+Route::group(['middleware' => 'auth', 'controller' => CartController::class], function () {
+    Route::get('/cart', 'index');
+    Route::post('/cart', 'store');
+    Route::delete('/cart', 'destroy');
 });
+
+
+
