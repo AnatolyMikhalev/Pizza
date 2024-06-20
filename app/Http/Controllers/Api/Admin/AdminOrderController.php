@@ -22,13 +22,6 @@ class AdminOrderController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     */
-    public function store(OrderStoreRequest $request)
-    {
-    }
-
-    /**
      * Display the specified resource.
      */
     public function show($id): OrderResource

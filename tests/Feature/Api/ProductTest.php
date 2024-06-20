@@ -78,13 +78,11 @@ class ProductTest extends TestCase
 
         $res->assertStatus(201);
 
-        dump($file->hashName());
-
         $this->assertDatabaseHas('products', [
             "name" => "Test Product",
             "price" => 10,
             "type" => "pizza",
-            'image_url' => 'images/' . $file->hashName(),
+            'image_url' => '/storage/images/' . $file->hashName(),
         ]);
     }
 
@@ -172,7 +170,7 @@ class ProductTest extends TestCase
             'id' => $product->id,
             'name' => 'Test Product Pizza',
             'price' => 2222,
-            'image_url' => 'images/' . $file->hashName(),
+            'image_url' => '/storage/images/' . $file->hashName(),
         ]);
     }
 

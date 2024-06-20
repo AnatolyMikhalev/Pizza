@@ -21,7 +21,6 @@ class OrderController extends Controller
         //Получаем все заказы, принадлежащие текущему пользователю
         $orders = Order::where('user_id', $user->id)->with('products')->get();
 
-        //return $orders->toJson();
         return OrderResource::collection($orders);
     }
 
@@ -43,7 +42,6 @@ class OrderController extends Controller
             ]);
         });
 
-        // Возврат успешного ответа
         return response()->json(['message' => 'Заказ успешно создан'], 201);
     }
 
@@ -52,22 +50,8 @@ class OrderController extends Controller
      */
     public function show($id): OrderResource
     {
+        //Получаем все заказы, принадлежащие текущему пользователю и ищем среди них заказ из запроса
         return new OrderResource(Order::where('user_id', auth()->user()->id)->with('products')->findOrFail($id));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Order $order)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
 }

@@ -20,7 +20,6 @@ class OrderTest extends TestCase
      *
      * @var bool
      */
-    //protected bool $seed = true;
 
     /** @test */
     public function test_index_user_can_see_hisown_orders()
@@ -154,6 +153,13 @@ class OrderTest extends TestCase
             'user_id' => $user->id,
             'address' => '111 Main St'
         ]);
+
+        foreach ($data['products'] as $product) {
+            $this->assertDatabaseHas('order_products', [
+                'product_id' => $product['product_id'],
+                'quantity' => $product['quantity'],
+            ]);
+        }
     }
 
     /** @test */

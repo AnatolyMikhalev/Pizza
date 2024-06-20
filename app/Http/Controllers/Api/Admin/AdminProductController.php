@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProductStoreRequest;
+use App\Http\Requests\ProductUpdateRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use Illuminate\Http\Request;
@@ -14,7 +15,6 @@ class AdminProductController extends Controller
     public function index(ProductStoreRequest $request)
     {
         return Product::all();
-        //return collection(Product::all());
     }
 
     /**
@@ -26,7 +26,7 @@ class AdminProductController extends Controller
 
         if(isset($data['image'])){
             $path = $data['image']->store('images', 'public');
-            $data['image_url'] = $path;
+            $data['image_url'] = Storage::url($path);
         }
 
         unset($data['image']);
@@ -47,7 +47,7 @@ class AdminProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Product $product)
+    public function update(ProductUpdateRequest $request, Product $product)
     {
         $data = $request->all();
 
@@ -57,7 +57,7 @@ class AdminProductController extends Controller
             }
 
             $path = $data['image']->store('images', 'public');
-            $data['image_url'] = $path;
+            $data['image_url'] = Storage::url($path);
         }
 
         unset($data['image']);
